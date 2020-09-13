@@ -6,9 +6,13 @@ config();
 export default function encryptPassword(password: string) {
     const passwordKey = process.env.passwordKey as string;
 
-    const cypher = crypto.createCipheriv('aes-256-gcm', passwordKey, null);
+    const key = crypto.scryptSync(passwordKey, 'salt', 32);
 
-    const encryptedPass = cypher.update(password, 'utf8', 'hex');
+    const iv = crypto.randomBytes(16);
 
-    return encryptPassword;
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+
+    const encryptedPass = cipher.update(password, 'utf8', 'hex');
+
+    return encryptedPass;
 };
