@@ -52,11 +52,37 @@ export default class UserController {
 
             const token = generateToken({ userId });
 
-            return response.status(200).json({ error: false, token });
+            return response.status(200).json({ error: false, data: [{ token }] });
         } catch(err) {
             if ( err ) console.log(err);
 
             return response.status(500).json({ error: true, message: "Unexpected error" });
+        }
+    }
+
+    async login(request: Request, response: Response) {
+        try {
+            const { email, password } = request.body;
+
+            const encryptedPassword = encryptPassword(password);
+
+            const user = await db('users')
+                .select(['id', 'password'])
+                .where({ email })
+                .first<{ id: string, password: string } | undefined>();
+
+            if ( !user ) 
+                return response.status(404).json({ error: true, message: 'Email has not been registered' });
+
+            if ( encryptedPassword !== user.password ) 
+                return response.status(401).json({ error: true, message: 'Wrong password' });
+
+            const token = generateToken({ userId: user.id });
+
+            return response.status(200).json({ error: false, data: [{ token }] });
+        }
+        catch(err) {
+            if ( err ) console.log(err);
         }
     }
 }
