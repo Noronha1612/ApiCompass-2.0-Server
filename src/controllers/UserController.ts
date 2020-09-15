@@ -9,9 +9,34 @@ import generateToken from '../utils/generateToken';
 
 export default class UserController {
     async index(request: Request, response: Response) {
-        const users = await db('users').select('*');
+        try {
+            const { userId } = request.query;
 
-        return response.status(200).json({ status: 200, response: users });
+            if ( !userId ) return response.status(400).json({ error: true, message: 'userId required on query' });
+
+            const requestedFields = [
+                'name',
+                'email',
+                'followers',
+                'following',
+                'score',
+                'created_api_ids',
+                'liked_api_ids'
+            ];
+            
+            const user = await db('users')
+                .select(requestedFields)
+                .where({ id: userId })
+                .first();
+
+            if ( !user ) return response.status(404).json({ error: true, message: 'User not found' });
+
+            return response.status(200).json({ error: false, data: [user] });
+        } catch(err) {
+            console.log(err);
+
+            return response.status(500).json({ error: true, message: 'Internal server error' });
+        }
     }
 
     async create(request: Request, response: Response) {
