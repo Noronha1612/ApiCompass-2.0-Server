@@ -43,6 +43,19 @@ export default class UserController {
         try {
             const { name, email, password, confirmPassword } = request.body;
 
+            const emailAlreadyExist = await db('users')
+                .select('email')
+                .where({ email })
+                .first();
+
+            const nameAlreadyExist = await db('users')
+            .select('name')
+            .where({ name })
+            .first();
+
+            if ( emailAlreadyExist ) return response.status(409).json({ error: true, message: 'email already exist' });
+            if ( nameAlreadyExist ) return response.status(409).json({ error: true, message: 'name already exist' });
+
             let userId;
 
             while(true) {

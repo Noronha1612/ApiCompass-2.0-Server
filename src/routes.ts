@@ -13,17 +13,17 @@ router.get('/users', UserController.index);
 
 router.post('/users', celebrate({
     body: Joi.object({
-        name: Joi.string().required().error(new Error("name required")),
-        email: Joi.string().required().error(new Error("email required")),
-        password: Joi.string().required().error(new Error("password required")),
-        confirmPassword: Joi.string().required().error(new Error("confirm password required")),
+        name: Joi.string().required(),
+        email: Joi.string().required(),
+        password: Joi.string().required(),
+        confirmPassword: Joi.string().required(),
     })
 }), UserController.create);
 
 router.post('/users/login', celebrate({
     body: Joi.object({
-        email: Joi.string().required().error(new Error("email required")),
-        password: Joi.string().required().error(new Error("password required")),
+        email: Joi.string().required(),
+        password: Joi.string().required(),
     })
 }), UserController.login);
 
