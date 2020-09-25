@@ -6,13 +6,14 @@ import db from '../database/connection';
 import encryptItem from '../utils/encryptItem';
 import generateToken from '../utils/generateToken';
 import searchByEmail from '../utils/searchByEmail';
+import searchById from '../utils/searchById';
 import sendMail from '../services/sendMail';
 
 
 export default class UserController {
     async index(request: Request, response: Response) {
         try {
-            const { userId } = request.query;
+            const { userId } = request.query as { userId: string | undefined };
 
             if ( !userId ) return response.status(400).json({ error: true, message: 'userId required on query' });
 
@@ -26,12 +27,9 @@ export default class UserController {
                 'liked_api_ids'
             ];
             
-            const user = await db('users')
-                .select(requestedFields)
-                .where({ id: userId })
-                .first();
+            const user = await searchById(userId, ...requestedFields);
 
-            if ( !user ) return response.status(404).json({ error: true, message: 'User not found' });
+            if ( !user.userExist ) return response.status(404).json({ error: true, message: 'User not found' });
 
             return response.status(200).json({ error: false, data: [user] });
         } catch(err) {
@@ -152,7 +150,7 @@ export default class UserController {
 
             const token = generateToken(payload);
 
-            return response.status(200).json({ error: false, token });
+            return response.status(200).json({ error: false, data: [{ token }] });
         } catch ( err ) {
             console.log(err);
 

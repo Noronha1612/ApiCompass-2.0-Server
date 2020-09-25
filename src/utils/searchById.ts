@@ -12,14 +12,14 @@ interface userInterface {
     score?: number;
 }
 
-export default async function searchByEmail(email: string, ...request: string[]) {
+export default async function searchById(userId: string, ...request: string[]) {
 
     const data = await db('users')
         .select(request)
-        .where({ email })
+        .where({ id: userId })
         .first<userInterface | undefined>();
 
-    if ( !data ) return { emailExist: false };
+    if ( !data ) return { userExist: false };
 
-    return { emailExist: true, data }
+    return { data }
 }
