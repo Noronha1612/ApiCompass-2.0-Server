@@ -134,7 +134,7 @@ export default class UserController {
             const authCode: number[] = [];
             for ( let ind = 0; ind < 6; ind++ ) authCode.push(Math.floor(Math.random() * 10));
 
-            authCode.map((number, ind) => {
+            const filteredAuthCode = authCode.map((number, ind) => {
                 if ( number == 10 ) authCode[ind] = Math.floor(Math.random() * 10);
 
                 return number;
@@ -142,7 +142,7 @@ export default class UserController {
 
             sendMail(userEmail, authCode);
 
-            const encryptedCode = encryptItem(authCode.join(''));
+            const encryptedCode = encryptItem(filteredAuthCode.join(''));
 
             const payload = {
                 email: userEmail,
