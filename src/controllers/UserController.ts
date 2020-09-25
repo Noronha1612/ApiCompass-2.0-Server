@@ -17,8 +17,6 @@ export default class UserController {
 
             if ( !userId ) return response.status(400).json({ error: true, message: 'userId required' });
 
-            console.log(userId);
-
             const requestedFields = [
                 'name',
                 'email',
@@ -38,6 +36,25 @@ export default class UserController {
             console.log(err);
 
             return response.status(500).json({ error: true, message: 'Internal server error' });
+        }
+    }
+
+    async indexAllUsers(request: Request, response: Response) {
+        try {
+
+            const allUsers = await db('users').select('*');
+
+            const filteredUsers = allUsers.map(user => {
+                delete user.password;
+                return user;
+            })
+
+            return response.status(200).json({ error: false, data: filteredUsers })
+
+        } catch (err) {
+            console.log(err);
+
+            return response.status(500).json({ error: true, message: 'Internal Server Error' });
         }
     }
 

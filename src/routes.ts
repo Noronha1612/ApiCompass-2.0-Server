@@ -15,6 +15,8 @@ router.get('/users/:id', celebrate({
     })
 }), UserController.index);
 
+router.get('/users', UserController.indexAllUsers);
+
 router.post('/users', celebrate({
     body: Joi.object({
         name: Joi.string().required(),
