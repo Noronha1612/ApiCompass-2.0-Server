@@ -5,6 +5,8 @@ import db from '../database/connection';
 
 import encryptPassword from '../utils/encryptPassword';
 import generateToken from '../utils/generateToken';
+import searchByEmail from '../utils/searchByEmail';
+import sendMail from '../services/sendMail';
 
 
 export default class UserController {
@@ -104,23 +106,43 @@ export default class UserController {
 
             const encryptedPassword = encryptPassword(password);
 
-            const user = await db('users')
-                .select(['id', 'password'])
-                .where({ email })
-                .first<{ id: string, password: string } | undefined>();
+            const emailSearchResponse = await searchByEmail(email, 'id', 'password');
 
-            if ( !user ) 
+            if ( !emailSearchResponse.emailExist ) 
                 return response.status(404).json({ error: true, message: 'Email has not been registered' });
 
-            if ( encryptedPassword !== user.password ) 
+            if ( encryptedPassword !== emailSearchResponse.data?.password as string) 
                 return response.status(401).json({ error: true, message: 'Wrong password' });
 
-            const token = generateToken({ userId: user.id });
+            const token = generateToken({ userId: emailSearchResponse.data?.id });
 
             return response.status(200).json({ error: false, data: [{ token }] });
         }
         catch(err) {
             if ( err ) console.log(err);
+        }
+    }
+
+    async sendCode(request: Request, response: Response) {
+        try {
+            const { userEmail } = request.query as { userEmail: string };
+
+
+
+            const authCode: number[] = [];
+            for ( let ind = 0; ind < 6; ind++ ) authCode.push(Math.floor(Math.random() * 10));
+
+            authCode.map((number, ind) => {
+                if ( number == 10 ) authCode[ind] = Math.floor(Math.random() * 10);
+
+                return number;
+            });
+
+            sendMail(userEmail, authCode);
+        } catch ( err ) {
+            console.log(err);
+
+            return response.status(500).json({ error: true, message: 'Internal Server Error' });
         }
     }
 }
