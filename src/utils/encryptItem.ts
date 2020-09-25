@@ -3,7 +3,7 @@ import { config } from 'dotenv';
 
 config();
 
-export default function encryptPassword(password: string) {
+export default function encryptItem(item: string) {
     const passwordKey = process.env.passwordKey as string;
     const iv = process.env.passwordIv as string;
 
@@ -11,7 +11,7 @@ export default function encryptPassword(password: string) {
 
     const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
 
-    const encryptedPass = cipher.update(password, 'utf8', 'hex');
+    const encryptedPass = cipher.update(item, 'utf8', 'hex');
 
     return encryptedPass;
 };

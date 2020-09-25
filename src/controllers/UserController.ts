@@ -3,7 +3,7 @@ import crypto from 'crypto';
 
 import db from '../database/connection';
 
-import encryptPassword from '../utils/encryptPassword';
+import encryptItem from '../utils/encryptItem';
 import generateToken from '../utils/generateToken';
 import searchByEmail from '../utils/searchByEmail';
 import sendMail from '../services/sendMail';
@@ -74,7 +74,7 @@ export default class UserController {
             if ( password !== confirmPassword ) 
                 return response.status(403).json({ error: true, message: "Passwords don't match" });
 
-            const encryptedPassword = encryptPassword(password);
+            const encryptedPassword = encryptItem(password);
 
             const data = {
                 id: userId,
@@ -104,7 +104,7 @@ export default class UserController {
         try {
             const { email, password } = request.body;
 
-            const encryptedPassword = encryptPassword(password);
+            const encryptedPassword = encryptItem(password);
 
             const emailSearchResponse = await searchByEmail(email, 'id', 'password');
 
@@ -127,7 +127,9 @@ export default class UserController {
         try {
             const { userEmail } = request.query as { userEmail: string };
 
+            const { emailExist, ...searchResponse } = await searchByEmail(userEmail, 'email');
 
+            if ( !emailExist ) return response.status(404).json({ error: true, message: 'Email not found' });
 
             const authCode: number[] = [];
             for ( let ind = 0; ind < 6; ind++ ) authCode.push(Math.floor(Math.random() * 10));
@@ -139,6 +141,18 @@ export default class UserController {
             });
 
             sendMail(userEmail, authCode);
+
+            const encryptedCode = encryptItem(authCode.join(''));
+
+            const payload = {
+                email: userEmail,
+                exp: Math.floor(Date.now() / 1000) + (60 * 60),
+                encryptedCode
+            };
+
+            const token = generateToken(payload);
+
+            return response.status(200).json({ error: false, token });
         } catch ( err ) {
             console.log(err);
 

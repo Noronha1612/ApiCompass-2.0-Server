@@ -27,6 +27,12 @@ router.post('/users/login', celebrate({
     })
 }), UserController.login);
 
+router.post('/users/sendMail', celebrate({
+    query: Joi.object({
+        userEmail: Joi.string().required(),
+    })
+}), UserController.sendCode);
+
 // ------------------------------------------------------------ //
 
 router.get('/apis', ApiController.index);
