@@ -173,4 +173,25 @@ export default class UserController {
             return response.status(500).json({ error: true, message: 'Internal Server Error' });
         }
     }
+
+    async delete(request: Request, response: Response) {
+        try {
+            const { userId } = request.params as { userId: string | undefined };
+
+            if ( !userId ) return response.status(400).json({ error: true, message: 'UserID required' });
+
+            const user = await searchById(userId, 'id');
+
+            if ( !user.userExist ) return response.status(404).json({ error: true, message: 'User not found' });
+
+            await db('users').delete('*').where({ id: user.data?.id });
+
+            return response.status(200).json({ error: false, data: [{ deletedUserId: user.data?.id }] });
+
+        } catch (err) {
+            console.log(err);
+
+            return response.status(500).json({ error: true, message: 'Internal Server Error' });
+        }
+    }
 }

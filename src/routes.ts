@@ -39,6 +39,12 @@ router.post('/users/sendMail', celebrate({
     })
 }), UserController.sendCode);
 
+router.delete('/users/:userId', celebrate({
+    params: Joi.object({
+        userId: Joi.string().required()
+    })
+}), UserController.delete);
+
 // ------------------------------------------------------------ //
 
 router.get('/apis', ApiController.index);
