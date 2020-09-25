@@ -13,9 +13,11 @@ import sendMail from '../services/sendMail';
 export default class UserController {
     async index(request: Request, response: Response) {
         try {
-            const { userId } = request.query as { userId: string | undefined };
+            const { id: userId } = request.params as { id: string | undefined };
 
-            if ( !userId ) return response.status(400).json({ error: true, message: 'userId required on query' });
+            if ( !userId ) return response.status(400).json({ error: true, message: 'userId required' });
+
+            console.log(userId);
 
             const requestedFields = [
                 'name',
@@ -31,7 +33,7 @@ export default class UserController {
 
             if ( !user.userExist ) return response.status(404).json({ error: true, message: 'User not found' });
 
-            return response.status(200).json({ error: false, data: [user] });
+            return response.status(200).json({ error: false, data: [user.data] });
         } catch(err) {
             console.log(err);
 
@@ -43,17 +45,14 @@ export default class UserController {
         try {
             const { name, email, password, confirmPassword } = request.body;
 
-            const emailAlreadyExist = await db('users')
-                .select('email')
-                .where({ email })
-                .first();
+            const searchEmailResponse = await searchByEmail(email, 'email');
 
             const nameAlreadyExist = await db('users')
             .select('name')
             .where({ name })
             .first();
 
-            if ( emailAlreadyExist ) return response.status(409).json({ error: true, message: 'email already exist' });
+            if ( searchEmailResponse.emailExist ) return response.status(409).json({ error: true, message: 'email already exist' });
             if ( nameAlreadyExist ) return response.status(409).json({ error: true, message: 'name already exist' });
 
             let userId;

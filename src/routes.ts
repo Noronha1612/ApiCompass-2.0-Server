@@ -9,7 +9,11 @@ const router = Router();
 const ApiController = new apiController();
 const UserController = new userController();
 
-router.get('/users', UserController.index);
+router.get('/users/:id', celebrate({
+    params: Joi.object({
+        id: Joi.string().required()
+    })
+}), UserController.index);
 
 router.post('/users', celebrate({
     body: Joi.object({

@@ -21,5 +21,5 @@ export default async function searchById(userId: string, ...request: string[]) {
 
     if ( !data ) return { userExist: false };
 
-    return { data }
+    return { userExist: true, data }
 }
