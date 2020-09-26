@@ -174,6 +174,31 @@ export default class UserController {
         }
     }
 
+    async changePassword(request: Request, response: Response) {
+        try {
+            const { password, confPassword } = request.body as { password: string, confPassword: string };
+            const { useremail: userEmail } = request.headers as { useremail: string };
+
+            if ( !password || !confPassword ) return response.status(400).json({ error: true, message: 'Password and Confirm Password required' });
+
+            if ( password !== confPassword ) return response.status(400).json({ error: true, message: "Passwords don't match"});
+
+            const user = await searchByEmail(userEmail, 'password', 'id');
+
+            const encryptedPassword = encryptItem(password);
+
+            if ( user.data?.password == encryptedPassword ) return response.status(400).json({ error: true, message: 'Password must not be equal to the previous one' });
+
+            await db('users').where({ email: userEmail }).update({ password: encryptedPassword });
+
+            return response.status(200).json({ error: false, data: [{ userId: user.data?.id }] });
+        } catch (err) {
+            console.log(err);
+
+            return response.status(500).json({ error: true, message: 'Internal Server Error' });
+        }
+    }
+
     async delete(request: Request, response: Response) {
         try {
             const { userId } = request.params as { userId: string | undefined };
@@ -194,4 +219,6 @@ export default class UserController {
             return response.status(500).json({ error: true, message: 'Internal Server Error' });
         }
     }
+
+    
 }

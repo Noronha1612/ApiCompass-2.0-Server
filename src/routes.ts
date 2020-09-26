@@ -39,6 +39,16 @@ router.post('/users/sendMail', celebrate({
     })
 }), UserController.sendCode);
 
+router.put('/users/password', celebrate({
+    body: Joi.object({
+        password: Joi.string().required(),
+        confPassword: Joi.string().required()
+    }),
+    headers: Joi.object({
+        useremail: Joi.string().required()
+    }).options({ allowUnknown: true })
+}), UserController.changePassword);
+
 router.delete('/users/:userId', celebrate({
     params: Joi.object({
         userId: Joi.string().required()
