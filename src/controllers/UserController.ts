@@ -220,5 +220,60 @@ export default class UserController {
         }
     }
 
-    
+    async follow(request: Request, response: Response) {
+        const trx = await db.transaction();
+
+        try {
+            const { followedid: followedId, userid: userId } = request.headers as { followedid: string, userid: string };
+
+            const user = await trx('users')
+                .select('following')
+                .where({ id: userId })
+                .first<{ following: string } | undefined>();
+            if ( !user ) {
+                trx.rollback();
+                return response.status(404).json({ error: true, message: 'User not found' });
+            }
+
+            const followed = await trx('users')
+                .select('followers')
+                .where({ id: followedId })
+                .first<{ followers: string } | undefined>();
+            if ( !followed ) {
+                trx.rollback();
+                return response.status(404).json({ error: true, message: 'Followed user not found' });
+            }
+
+            const newFollowingArr: string[] = user.following
+                .split(',')
+                .filter(id => !!id);
+            
+            const newFollowersArr: string[] = followed.followers
+                .split(',')
+                .filter(id => !!id);
+
+            if ( newFollowingArr.includes(followedId) || newFollowersArr.includes(userId) ) {
+                trx.rollback();
+                return response.status(403).json({ error: true, message: 'User has already followed' });
+            }
+
+            newFollowingArr.push(followedId);
+            newFollowersArr.push(userId);
+
+            const newFollowing = newFollowingArr.join(',');
+            const newFollowers = newFollowersArr.join(',');
+
+            await trx('users').where({ id: userId }).update({ following: newFollowing });            
+            await trx('users').where({ id: followedId }).update({ followers: newFollowers }); 
+            
+            await trx.commit();
+
+            return response.status(200).json({ error: false, data: [{ followedId, userId }] });
+        } catch (err) {
+            await trx.rollback();
+
+            console.log(err);
+            return response.status(500).json({ error: true, message: 'Internal Server Error' });
+        }
+    }
 }

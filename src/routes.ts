@@ -49,6 +49,13 @@ router.put('/users/password', celebrate({
     }).options({ allowUnknown: true })
 }), UserController.changePassword);
 
+router.put('/users/follow', celebrate({
+    headers: Joi.object({
+        followedid: Joi.string().required(),
+        userid: Joi.string().required()
+    }).options({ allowUnknown: true })
+}), UserController.follow);
+
 router.delete('/users/:userId', celebrate({
     params: Joi.object({
         userId: Joi.string().required()
