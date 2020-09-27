@@ -9,7 +9,6 @@ import searchByEmail from '../utils/searchByEmail';
 import searchById from '../utils/searchById';
 import sendMail from '../services/sendMail';
 
-
 export default class UserController {
     async index(request: Request, response: Response) {
         try {

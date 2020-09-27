@@ -71,6 +71,12 @@ router.delete('/users/:userId', celebrate({
 
 // ------------------------------------------------------------ //
 
-router.get('/apis', ApiController.index);
+router.get('/apis/all', ApiController.indexAllApis);
+
+router.get('/apis', celebrate({
+    headers: Joi.object({
+        apiids: Joi.string().required()
+    }).options({ allowUnknown: true })
+}), ApiController.index);
 
 export default router;
