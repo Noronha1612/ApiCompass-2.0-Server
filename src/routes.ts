@@ -79,4 +79,16 @@ router.get('/apis', celebrate({
     }).options({ allowUnknown: true })
 }), ApiController.index);
 
+router.post('/apis', celebrate({
+    headers: Joi.object({
+        creatorid: Joi.string().required()
+    }).options({ allowUnknown: true }),
+    body: Joi.object({
+        apiName: Joi.string().required(),
+        description: Joi.string().required(),
+        documentationUrl: Joi.string(),
+        mainUrl: Joi.string().required()
+    })
+}), ApiController.create);
+
 export default router;
