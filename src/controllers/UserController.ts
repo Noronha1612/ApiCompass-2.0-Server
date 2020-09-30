@@ -232,18 +232,18 @@ export default class UserController {
             }
 
             const user = await trx('users')
-                .select('following')
+                .select(['following', 'score'])
                 .where({ id: userId })
-                .first<{ following: string } | undefined>();
+                .first<{ following: string, score: number } | undefined>();
             if ( !user ) {
                 trx.rollback();
                 return response.status(404).json({ error: true, message: 'User not found' });
             }
 
             const followed = await trx('users')
-                .select('followers')
+                .select(['followers', 'score'])
                 .where({ id: followedId })
-                .first<{ followers: string } | undefined>();
+                .first<{ followers: string, score: number } | undefined>();
             if ( !followed ) {
                 trx.rollback();
                 return response.status(404).json({ error: true, message: 'Followed user not found' });
@@ -268,8 +268,8 @@ export default class UserController {
             const newFollowing = newFollowingArr.join(',');
             const newFollowers = newFollowersArr.join(',');
 
-            await trx('users').where({ id: userId }).update({ following: newFollowing });            
-            await trx('users').where({ id: followedId }).update({ followers: newFollowers }); 
+            await trx('users').where({ id: userId }).update({ following: newFollowing, score: user.score + 1 });            
+            await trx('users').where({ id: followedId }).update({ followers: newFollowers, score: user.score + 2 }); 
             
             await trx.commit();
 
@@ -289,18 +289,18 @@ export default class UserController {
             const { followedid: followedId, userid: userId } = request.headers as { followedid: string, userid: string };
 
             const user = await trx('users')
-                .select('following')
+                .select(['following', 'score'])
                 .where({ id: userId })
-                .first<{ following: string } | undefined>();
+                .first<{ following: string, score: number } | undefined>();
             if ( !user ) {
                 trx.rollback();
                 return response.status(404).json({ error: true, message: 'User not found' });
             }
 
             const followed = await trx('users')
-                .select('followers')
+                .select(['followers', 'score'])
                 .where({ id: followedId })
-                .first<{ followers: string } | undefined>();
+                .first<{ followers: string, score: number } | undefined>();
             if ( !followed ) {
                 trx.rollback();
                 return response.status(404).json({ error: true, message: 'Followed user not found' });
@@ -322,8 +322,8 @@ export default class UserController {
             const newFollowing = newFollowingArr.join(',');
             const newFollowers = newFollowersArr.join(',');
 
-            await trx('users').where({ id: userId }).update({ following: newFollowing });            
-            await trx('users').where({ id: followedId }).update({ followers: newFollowers }); 
+            await trx('users').where({ id: userId }).update({ following: newFollowing, score: user.score - 1 });            
+            await trx('users').where({ id: followedId }).update({ followers: newFollowers, score: followed.score - 2 }); 
             
             await trx.commit();
 

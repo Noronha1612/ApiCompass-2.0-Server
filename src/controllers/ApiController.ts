@@ -69,6 +69,13 @@ export default class ApiController {
                 mainUrl: string
             };
 
+            const suppostApi = await db('apis')
+                .select('id')
+                .whereRaw('apiName = ? OR mainUrl = ?', [dataBody.apiName, dataBody.mainUrl])
+                .first<{ id: string } | undefined>();
+
+            if ( suppostApi ) return response.status(403).json({ error: true, message: 'API has already been created' })
+
             const data = {
                 ...dataBody,
                 views: 0,
