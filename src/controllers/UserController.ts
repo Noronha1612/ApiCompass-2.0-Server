@@ -96,8 +96,8 @@ export default class UserController {
                 password: encryptedPassword,
                 created_api_ids: '',
                 liked_api_ids: '',
-                followers: [],
-                following: [],
+                followers: JSON.stringify([]),
+                following: JSON.stringify([]),
                 score: 0
             };
 
@@ -249,27 +249,22 @@ export default class UserController {
                 return response.status(404).json({ error: true, message: 'Followed user not found' });
             }
 
-            const newFollowingArr: string[] = user.following
-                .split(',')
-                .filter(id => !!id);
+            const newFollowingArr: string[] = JSON.parse(user.following)
+            const newFollowing = newFollowingArr.filter(id => !!id);
             
-            const newFollowersArr: string[] = followed.followers
-                .split(',')
-                .filter(id => !!id);
+            const newFollowersArr: string[] = JSON.parse(followed.followers)
+            const newFollowers = newFollowersArr.filter(id => !!id);
 
-            if ( newFollowingArr.includes(followedId) || newFollowersArr.includes(userId) ) {
+            if ( newFollowing.includes(followedId) || newFollowers.includes(userId) ) {
                 trx.rollback();
                 return response.status(403).json({ error: true, message: 'User has already followed' });
             }
 
-            newFollowingArr.push(followedId);
-            newFollowersArr.push(userId);
+            newFollowing.push(followedId);
+            newFollowers.push(userId);
 
-            const newFollowing = newFollowingArr.join(',');
-            const newFollowers = newFollowersArr.join(',');
-
-            await trx('users').where({ id: userId }).update({ following: newFollowing, score: user.score + 1 });            
-            await trx('users').where({ id: followedId }).update({ followers: newFollowers, score: user.score + 2 }); 
+            await trx('users').where({ id: userId }).update({ following: JSON.stringify(newFollowing), score: user.score + 1 });            
+            await trx('users').where({ id: followedId }).update({ followers: JSON.stringify(newFollowers), score: user.score + 2 }); 
             
             await trx.commit();
 
@@ -311,19 +306,14 @@ export default class UserController {
                 return response.status(403).json({ error: true, message: 'User has not followed yet' });
             }
 
-            const newFollowingArr: string[] = user.following
-                .split(',')
-                .filter(id => !!id && id !== followedId);
+            const newFollowingArr: string[] = JSON.parse(user.following);
+            const newFollowing = newFollowingArr.filter(id => !!id && id !== followedId);
             
-            const newFollowersArr: string[] = followed.followers
-                .split(',')
-                .filter(id => !!id && id !== userId);
-            
-            const newFollowing = newFollowingArr.join(',');
-            const newFollowers = newFollowersArr.join(',');
+            const newFollowersArr: string[] = JSON.parse(followed.followers);
+            const newFollowers = newFollowersArr.filter(id => !!id && id !== userId);
 
-            await trx('users').where({ id: userId }).update({ following: newFollowing, score: user.score - 1 });            
-            await trx('users').where({ id: followedId }).update({ followers: newFollowers, score: followed.score - 2 }); 
+            await trx('users').where({ id: userId }).update({ following: JSON.stringify(newFollowing), score: user.score - 1 });            
+            await trx('users').where({ id: followedId }).update({ followers: JSON.stringify(newFollowers), score: followed.score - 2 }); 
             
             await trx.commit();
 
