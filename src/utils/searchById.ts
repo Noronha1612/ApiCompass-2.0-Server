@@ -1,23 +1,14 @@
 import db from '../database/connection';
 
-interface userInterface {
-    id?: string;
-    name?: string;
-    email?: string;
-    password?: string;
-    created_api_ids?: string;
-    liked_api_ids?: string;
-    followers?: string;
-    following?: string;
-    score?: number;
-}
+import { UserInterface } from '../types';
 
-export default async function searchById(userId: string, ...request: string[]) {
+export default async function searchById<T extends keyof UserInterface>(userId: string, ...request: T[]) {
+    type requestResponse = Pick<UserInterface, T>
 
     const data = await db('users')
         .select(request)
         .where({ id: userId })
-        .first<userInterface | undefined>();
+        .first<requestResponse | undefined>();
 
     if ( !data ) return { userExist: false };
 
