@@ -8,6 +8,7 @@ import generateToken from '../utils/generateToken';
 import searchByEmail from '../utils/searchByEmail';
 import searchById from '../utils/searchById';
 import sendMail from '../services/sendMail';
+import { UserInterface } from '../types';
 
 export default class UserController {
     async index(request: Request, response: Response) {
@@ -16,7 +17,7 @@ export default class UserController {
 
             if ( !userId ) return response.status(400).json({ error: true, message: 'userId required' });
 
-            const requestedFields = [
+            const requestedFields: (keyof UserInterface)[] = [
                 'name',
                 'email',
                 'followers',
